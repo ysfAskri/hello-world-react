@@ -56,12 +56,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: infra
 
+      - name: Debug - Show current yaml contents
+        run: |
+          echo "Current contents of hello-world.yaml:"
+          cat infra/hello-world.yaml
+
       - name: Update Kubernetes manifests
         run: |
-          sed -i 's|image: ghcr.io/ysfaskri/hello-world-react:.*|image: ${{ steps.meta.outputs.tags }}|' infra/hello-world.yaml
+          NEW_IMAGE_TAG="${{ steps.meta.outputs.tags }}"
+          sed -i "s|image: ghcr.io/ysfaskri/hello-world-k8s:.*|image: $NEW_IMAGE_TAG|" infra/hello-world.yaml
+          echo "Contents after sed command:"
+          cat infra/hello-world.yaml
           if [[ -n $(git -C infra status -s) ]]; then
+            echo "Changes detected"
             echo "CHANGES_EXIST=true" >> $GITHUB_ENV
           else
+            echo "No changes detected"
             echo "CHANGES_EXIST=false" >> $GITHUB_ENV
           fi
 
@@ -74,3 +84,8 @@ jobs:
           git add hello-world.yaml
           git commit -m "Update image to ${{ steps.meta.outputs.tags }}"
           git push
+
+      - name: Debug - Show final yaml contents
+        run: |
+          echo "Final contents of hello-world.yaml:"
+          cat infra/hello-world.yaml
