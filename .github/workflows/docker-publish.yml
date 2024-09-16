@@ -88,11 +88,29 @@ jobs:
           path: infra
           fetch-depth: 1
 
+      - name: Debug - Show yaml contents before
+        run: |
+          echo "Before:"
+          cat infra/hello-world.yaml
+
       - name: Update Kubernetes manifests
         run: |
           sed -i 's|image: ghcr.io/ysfaskri/hello-world-react:.*|image: ghcr.io/ysfaskri/hello-world-react:${{ steps.get_version.outputs.VERSION }}|' infra/hello-world.yaml
+          if git -C infra diff --exit-code; then
+            echo "No changes to commit"
+            echo "CHANGES_EXIST=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected"
+            echo "CHANGES_EXIST=true" >> $GITHUB_ENV
+          fi
+
+      - name: Debug - Show yaml contents after
+        run: |
+          echo "After:"
+          cat infra/hello-world.yaml
 
       - name: Commit and push changes
+        if: env.CHANGES_EXIST == 'true'
         run: |
           cd infra
           git config user.name github-actions
@@ -100,3 +118,7 @@ jobs:
           git add .
           git commit -m "Update image to ${{ steps.get_version.outputs.VERSION }}"
           git push
+
+      - name: No changes detected
+        if: env.CHANGES_EXIST == 'false'
+        run: echo "No changes were made to the infrastructure repository"
