@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Build and K8s Manifest Update
 
 on:
   schedule:
@@ -12,9 +12,10 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  INFRA_REPO: ysfAskri/hello-world-k8s  # Replace with your infrastructure repo name
 
 jobs:
-  build:
+  build-and-update:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -74,3 +75,27 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_SHA::8}
+
+      - name: Checkout infrastructure repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.INFRA_REPO }}
+          token: ${{ secrets.INFRA_REPO_PAT }}
+          path: infra
+
+      - name: Update Kubernetes manifests
+        run: |
+          sed -i 's|image: ghcr.io/ysfaskri/hello-world-k8s:.*|image: ghcr.io/ysfaskri/hello-world-k8s:${{ steps.get_version.outputs.VERSION }}|' infra/hello-world.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd infra
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update image to ${{ steps.get_version.outputs.VERSION }}"
+          git push
