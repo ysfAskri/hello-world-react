@@ -1,0 +1,22 @@
+{
+  "name": "@ysfAskri/hello-world-k8s",
+  "version": "1.0.0",
+  "description": "Hello World React App for K8s",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ysfAskri/hello-world-k8s.git"
+  },
+  "author": "ysfAskri",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ysfAskri/hello-world-k8s/issues"
+  },
+  "homepage": "https://github.com/ysfAskri/hello-world-k8s#readme",
+  "publishConfig": {
+    "@ysfAskri:registry": "https://npm.pkg.github.com"
+  }
+}
