@@ -1,7 +1,7 @@
 function App() {
     return (
         <div>
-            <h1>Hello, World! ASK</h1>
+            <h1>Hello, World! Ramy</h1>
             <p>Welcome to my React app deployed with ArgoCD!</p>
         </div>
     );
